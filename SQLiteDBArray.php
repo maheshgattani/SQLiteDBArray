@@ -129,6 +129,9 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 		private function getElementAtId($id) {
 			$sql = 'SELECT * from ' . $this->table_name . ' WHERE ' . $this->id_field_name . ' = ' . $id . ';';
 			$ret = $this->query($sql);
+			if(!$ret){
+				throw new Exception($this->lastErrorMsg());
+			}
 			$row = $ret->fetchArray(SQLITE3_ASSOC);
 			unset($row[$this->id_field_name]);
 			return $row;
@@ -143,15 +146,15 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 		}
 
 		function key() {
-			return $this->ids[$this->position];
+			return $this->ids[$this->position] - 1;
 		}
 
 		function next() {
-			$this->ids[++$this->position];
+			++$this->position;
 		}
 
 		function valid() {
-			return $this->getElementAtId($this->ids[$this->position]);
+			return isset($this->ids[$this->position]);
 		}
 
 		function count() {
@@ -169,12 +172,20 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 	$test = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20);
 	foreach($test as $t) {
 		$db[$t] = array('name' => 'testName' . $t);
-		var_dump(count($db));
 	}
 
-	// Example reads
-	foreach($test as $t) {
-		var_dump($db[$t]);
+	// Examples of count
+	var_dump(count($db));
+
+	// Example reads using for
+	for($i = 0; $i <= 20; $i++) {
+		var_dump($db[$i]);
+	}
+
+	// Example reads using foreach
+	foreach($db as $key => $value) {
+		var_dump($key);
+		var_dump($value);
 	}
 
 	// Example unset
