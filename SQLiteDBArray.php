@@ -91,6 +91,9 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 		private function getIds() {
 			$sql = 'SELECT ' . $this->id_field_name . ' from ' . $this->table_name . ';';
 			$ret = $this->query($sql);
+			if(!$ret){
+				throw new Exception($this->lastErrorMsg());
+			}
 			$ids = array();
 			while($row = $ret->fetchArray(SQLITE3_ASSOC) ){
 				$ids[] = $row[$this->id_field_name];
@@ -103,6 +106,9 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 			$sql = 'SELECT * from ' . $this->table_name . ' WHERE ' . $this->id_field_name . ' = ' . $offset . ';';
 			$ret = $this->query($sql);
 			$row = $ret->fetchArray(SQLITE3_ASSOC);
+			if(!$ret){
+				throw new Exception($this->lastErrorMsg());
+			}
 			return isset($row);
 		}
 
@@ -110,8 +116,9 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 			$offset++;
 			$sql = 'DELETE from ' . $this->table_name . ' WHERE ' . $this->id_field_name . ' = ' . $offset . ';';
 			$ret = $this->query($sql);
-			$row = $ret->fetchArray(SQLITE3_ASSOC);
-			return isset($row);
+			if(!$ret){
+				throw new Exception($this->lastErrorMsg());
+			}
 		}
 
 		function offsetGet($offset) {
@@ -158,13 +165,20 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 	$db = new SQLiteDBArray(array('name' => SQLiteDBArray::$TEXT, 'age' => SQLiteDBArray::$INTEGER,
 		'address' => SQLiteDBArray::$TEXT, 'salary' => SQLiteDBArray::$REAL));
 
+	// Example writes
 	$test = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20);
 	foreach($test as $t) {
 		$db[$t] = array('name' => 'testName' . $t);
 		var_dump(count($db));
 	}
 
+	// Example reads
 	foreach($test as $t) {
 		var_dump($db[$t]);
 	}
+
+	// Example unset
+	var_dump($db[1]);
+	unset($db[1]);
+	var_dump($db[1]);
 ?>
