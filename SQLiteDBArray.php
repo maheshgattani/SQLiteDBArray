@@ -191,7 +191,7 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 		$db[$t] = array('name' => 'testName' . $t);
 	}
 
-	// Examples of count
+	// Example of count
 	var_dump(count($db));
 
 	// Example reads using for
