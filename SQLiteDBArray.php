@@ -29,6 +29,8 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 			ADDRESS        TEXT,
 			SALARY         REAL)
 			 *
+			 * An additional primary key will be added automatically which will act as index and will auto increment.
+			 *
 			 * Allowed data types
 			INTEGER. The value is a signed integer, stored in 1, 2, 3, 4, 6, or 8 bytes depending on the magnitude of the value.
 			REAL. The value is a floating point value, stored as an 8-byte IEEE floating point number.
