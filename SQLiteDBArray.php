@@ -7,15 +7,15 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 		public static $INTEGER = 'INTEGER';
 		public static $REAL = 'REAL';
 		public static $TEXT = 'TEXT';
-		var $id_field_name = '';
+		var $idFieldName = '';
 		var $position = 0;
-		var $table_name = 'data_table';
-		var $table_keys = array();
+		var $tableName = 'data_table';
+		var $tableKeys = array();
 		var $ids = array();
 
-		function __construct($table_syntax) {
+		function __construct($tableSyntax) {
 
-			/*** $table_syntax
+			/*** $tableSyntax
 			 * array(
 			 *       'name' => SQLiteDBArray::$TEXT, 'age' => SQLiteDBArray::$INTEGER,
 			 *       'address' => SQLiteDBArray::$TEXT, 'salary' => SQLiteDBArray::$REAL
@@ -39,9 +39,9 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 			 */
 
 			$this->open(':memory:');
-			$this->id_field_name = 'id_'.time();
-			$this->table_keys = array_keys($table_syntax);
-			$ret = $this->exec($this->array_syntax_to_sql_syntax($this->id_field_name, $table_syntax));
+			$this->idFieldName = 'id_'.time();
+			$this->tableKeys = array_keys($tableSyntax);
+			$ret = $this->exec($this->arraySyntaxToSqlSyntax($this->idFieldName, $tableSyntax));
 
 			if(!$ret) {
 				throw new Exception($this->lastErrorMsg());
@@ -52,13 +52,13 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 			$this->close();
 		}
 
-		private function array_syntax_to_sql_syntax($id_field, $array_syntax) {
-			$create_sql = 'CREATE TABLE data_table (';
-			$create_sql .= $id_field . ' INTEGER PRIMARY KEY AUTOINCREMENT, ';
+		private function arraySyntaxToSqlSyntax($id_field, $array_syntax) {
+			$createSql = 'CREATE TABLE ' . $this->tableName . ' (';
+			$createSql .= $id_field . ' INTEGER PRIMARY KEY AUTOINCREMENT, ';
 			foreach($array_syntax as $key => $part) {
-				$create_sql .= $key . ' ' . $part . ',';
+				$createSql .= $key . ' ' . $part . ',';
 			}
-			return substr($create_sql, 0, -1) . ");";
+			return substr($createSql, 0, -1) . ");";
 		}
 
 		function offsetSet($offset, $value) {
@@ -66,18 +66,18 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 				$offset++; // sqlite autoincrement starts at 1
 			}
 			$sql = '';
-			$key_string = '';
-			$value_string = '';
-			foreach ($this->table_keys as $key) {
+			$keyString = '';
+			$valueString = '';
+			foreach ($this->tableKeys as $key) {
 				if(isset($value[$key])) {
-					$key_string .= $key . ',';
-					$value_string .= '\'' . $value[$key] . '\',';
+					$keyString .= $key . ',';
+					$valueString .= '\'' . $value[$key] . '\',';
 				}
 			}
 			if (is_null($offset)) {
-				$sql = 'INSERT INTO ' . $this->table_name . ' (' . substr($key_string, 0, -1) . ') VALUES (' . substr($value_string, 0, -1) . ');';
+				$sql = 'INSERT INTO ' . $this->tableName . ' (' . substr($keyString, 0, -1) . ') VALUES (' . substr($valueString, 0, -1) . ');';
 			} else {
-				$sql = 'INSERT OR REPLACE INTO ' . $this->table_name . ' (' . $this->id_field_name . ',' . substr($key_string, 0, -1) . ') VALUES (' . $offset . ',' . substr($value_string, 0, -1) . ');';
+				$sql = 'INSERT OR REPLACE INTO ' . $this->tableName . ' (' . $this->idFieldName . ',' . substr($keyString, 0, -1) . ') VALUES (' . $offset . ',' . substr($valueString, 0, -1) . ');';
 			}
 
 			$ret = $this->exec($sql);
@@ -89,21 +89,21 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 		}
 
 		private function getIds() {
-			$sql = 'SELECT ' . $this->id_field_name . ' from ' . $this->table_name . ';';
+			$sql = 'SELECT ' . $this->idFieldName . ' from ' . $this->tableName . ';';
 			$ret = $this->query($sql);
 			if(!$ret){
 				throw new Exception($this->lastErrorMsg());
 			}
 			$ids = array();
 			while($row = $ret->fetchArray(SQLITE3_ASSOC) ){
-				$ids[] = $row[$this->id_field_name];
+				$ids[] = $row[$this->idFieldName];
 			}
 			$this->ids = $ids;
 		}
 
 		function offsetExists($offset) {
 			$offset++;
-			$sql = 'SELECT * from ' . $this->table_name . ' WHERE ' . $this->id_field_name . ' = ' . $offset . ';';
+			$sql = 'SELECT * from ' . $this->tableName . ' WHERE ' . $this->idFieldName . ' = ' . $offset . ';';
 			$ret = $this->query($sql);
 			$row = $ret->fetchArray(SQLITE3_ASSOC);
 			if(!$ret){
@@ -114,7 +114,7 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 
 		function offsetUnset($offset) {
 			$offset++;
-			$sql = 'DELETE from ' . $this->table_name . ' WHERE ' . $this->id_field_name . ' = ' . $offset . ';';
+			$sql = 'DELETE from ' . $this->tableName . ' WHERE ' . $this->idFieldName . ' = ' . $offset . ';';
 			$ret = $this->query($sql);
 			if(!$ret){
 				throw new Exception($this->lastErrorMsg());
@@ -127,13 +127,13 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 		}
 
 		private function getElementAtId($id) {
-			$sql = 'SELECT * from ' . $this->table_name . ' WHERE ' . $this->id_field_name . ' = ' . $id . ';';
+			$sql = 'SELECT * from ' . $this->tableName . ' WHERE ' . $this->idFieldName . ' = ' . $id . ';';
 			$ret = $this->query($sql);
 			if(!$ret){
 				throw new Exception($this->lastErrorMsg());
 			}
 			$row = $ret->fetchArray(SQLITE3_ASSOC);
-			unset($row[$this->id_field_name]);
+			unset($row[$this->idFieldName]);
 			return $row;
 		}
 
@@ -159,6 +159,23 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 
 		function count() {
 			return count($this->ids);
+		}
+
+		/***
+		 * @param $query SQL query. Must match sql standards.
+		 * @return array containing the output of the query
+		 * @throws Exception if the query fails
+		 */
+		function executeDbQuery($query) {
+			$ret = $this->query($query);
+			if(!$ret){
+				throw new Exception($this->lastErrorMsg());
+			}
+			$output = array();
+			while($row = $ret->fetchArray(SQLITE3_ASSOC) ){
+				$output[] = $row;
+			}
+			return $output;
 		}
 	}
 
