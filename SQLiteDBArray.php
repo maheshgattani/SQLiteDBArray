@@ -193,6 +193,7 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 
 	// Example of count
 	var_dump(count($db));
+	// return 13
 
 	// Example reads using for
 	for($i = 0; $i <= 20; $i++) {
@@ -207,6 +208,8 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 
 	// Example unset
 	var_dump($db[1]);
+	// returns "testName1"
 	unset($db[1]);
 	var_dump($db[1]);
+	// returns false
 ?>
