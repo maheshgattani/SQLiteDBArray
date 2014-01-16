@@ -188,7 +188,7 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 	// Example writes
 	$test = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20);
 	foreach($test as $t) {
-		$db[$t] = array('name' => 'testName' . $t);
+		$db[$t] = array('name' => 'testName' . $t, "age" => $t * 2, "address" => "Address: Dummy ".$t, "salary" => $t);
 	}
 
 	// Example of count
@@ -205,6 +205,18 @@ class SQLiteDBArray extends SQLite3 implements ArrayAccess, Iterator, Countable 
 		var_dump($key);
 		var_dump($value);
 	}
+	
+	// Special query
+        var_dump($db->executeDBQuery("SELECT MIN(salary) as min_salary FROM data_table"));
+        // returns array(array('min_salary' => 1))
+        var_dump($db->executeDBQuery("SELECT MAX(salary) as max_salary FROM data_table"));
+        var_dump($db->executeDBQuery("SELECT MIN(age) as min_age FROM data_table"));
+        var_dump($db->executeDBQuery("SELECT MAX(age) as max_age FROM data_table"));
+
+        var_dump($db->executeDBQuery("SELECT SUM(salary) as sum_salary FROM data_table"));
+        var_dump($db->executeDBQuery("SELECT SUM(age) as sum_age FROM data_table"));
+        
+        var_dump($db->executeDBQuery("SELECT DISTINCT(address) FROM data_table"));
 
 	// Example unset
 	var_dump($db[1]);
